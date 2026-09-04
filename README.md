@@ -175,9 +175,38 @@ All tests run against live database scenarios (joining, event RSVP, capacity lim
 
 ---
 
+## 👥 Project Development Team & Module Distribution
+
+This project was developed collaboratively by a **3-Member Engineering Team** with clearly segregated module ownership and architectural responsibilities:
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                   COLLEGE CLUB MANAGEMENT SYSTEM (3-MEMBER TEAM)                  │
+├─────────────────────────┬────────────────────────────┬───────────────────────────┤
+│    MEMBER 1 (LEAD)      │          MEMBER 2          │         MEMBER 3          │
+│ Full-Stack & DB Arch    │      Frontend & UI/UX      │     Modules, Events & QA  │
+├─────────────────────────┼────────────────────────────┼───────────────────────────┤
+│ • Database ORM Models   │ • Collegiate Design System │ • Student RSVP & Passes   │
+│ • Authentication & RBAC │ • Master Layout & Toasts   │ • Event Lifecycle Engine  │
+│ • Admin Control Center  │ • Landing Page & Metrics   │ • Coordinator Workspace   │
+│ • Data Seeder & API     │ • Search & DOM JS Logic    │ • Integration Test Suite  │
+└─────────────────────────┴────────────────────────────┴───────────────────────────┘
+```
+
+### 📋 Detailed Member Assignment Matrix
+
+| # | Team Member | Primary Role | Assigned Modules & Technical Contributions |
+| :- | :--- | :--- | :--- |
+| **1** | **Bhagath Shankar** *(Lead)* | **Full-Stack & Database Architect** | • Designed relational database schema in `models.py` (`User`, `Club`, `Membership`, `Event`, `EventRegistration`, `Announcement`)<br>• Implemented secure session-based authentication & RBAC decorators (`@login_required`, `@role_required`) in `app.py`<br>• Built Admin Control Center (`/admin/dashboard`, `/admin/users`, `/admin/clubs`) with role switching and user deactivation<br>• Created automatic database seeding pipeline with demo entities and test credentials |
+| **2** | **Team Member 2** | **Frontend & UI/UX Specialist** | • Designed modern custom collegiate UI theme in `static/css/style.css` using modern gradients, glassmorphism, and responsive CSS variables<br>• Developed master layout `templates/base.html` with responsive navbar, floating toast alerts, and footer<br>• Crafted interactive landing page `templates/index.html` featuring real-time hero metrics, spotlight cards, and dynamic bulletins<br>• Wrote JavaScript utilities in `static/js/main.js` for live search filtering and 1-click test fill chips |
+| **3** | **Team Member 3** | **Modules & Quality Assurance Engineer** | • Implemented Student Hub (`/student/dashboard`, `/student/my_clubs`, `/student/my_events`) with digital ticket pass generation (`PASS #TKT-...`)<br>• Built Coordinator Workspace (`/coordinator/*`) for event capacity tracking, member promotion, and attendee check-in management<br>• Developed campus-wide Announcement & Bulletin Broadcasting System (`/announcements`) with priority tagging (`Normal`, `Important`, `Urgent`)<br>• Authored automated integration test suite in `test_app.py` verifying model integrity and RBAC permissions |
+
+---
+
 ## 🔮 Future Enhancements
 
 * QR code generation for digital event ticket check-ins.
 * Email notifications for new announcements and event reminders via SMTP.
 * Club budget tracking and expense reimbursement workflows.
 * Certificate generation for active participants and workshop attendees.
+
