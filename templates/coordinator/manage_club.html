@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Club Details - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('coordinator_dashboard') }}">Coordinator Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Club Settings</li>
+                </ol>
+            </nav>
+
+            <div class="custom-card-no-hover p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="stat-icon-wrapper stat-icon-primary">
+                        <i class="bi bi-gear-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">Club Profile Settings</h3>
+                        <p class="text-muted small mb-0">Update club descriptions, banner visuals, meeting locations, and socials.</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('coordinator_manage_club') }}">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label small fw-semibold">Club Name (Fixed by Admin)</label>
+                            <input type="text" class="form-control bg-light" value="{{ club.name }}" readonly disabled>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="category" class="form-label small fw-semibold">Category</label>
+                            <select class="form-select" id="category" name="category" required>
+                                <option value="Technical" {% if club.category == 'Technical' %}selected{% endif %}>Technical & Software</option>
+                                <option value="Cultural" {% if club.category == 'Cultural' %}selected{% endif %}>Cultural & Arts</option>
+                                <option value="Arts & Media" {% if club.category == 'Arts & Media' %}selected{% endif %}>Arts & Media</option>
+                                <option value="Sports & Fitness" {% if club.category == 'Sports & Fitness' %}selected{% endif %}>Sports & Fitness</option>
+                                <option value="Business & Leadership" {% if club.category == 'Business & Leadership' %}selected{% endif %}>Business & Leadership</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="room_or_location" class="form-label small fw-semibold">Meeting Room / Venue</label>
+                            <input type="text" class="form-control" id="room_or_location" name="room_or_location" value="{{ club.room_or_location }}" placeholder="e.g. Student Activity Hall 204" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="short_description" class="form-label small fw-semibold">Short Summary (1-2 sentences)</label>
+                            <input type="text" class="form-control" id="short_description" name="short_description" value="{{ club.short_description }}" maxlength="250" placeholder="Brief elevator pitch for card previews" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="description" class="form-label small fw-semibold">Full Description & Mission</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" placeholder="Detailed club mission, activities, upcoming goals..." required>{{ club.description }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="meeting_schedule" class="form-label small fw-semibold">Regular Meeting Schedule</label>
+                            <input type="text" class="form-control" id="meeting_schedule" name="meeting_schedule" value="{{ club.meeting_schedule }}" placeholder="e.g. Wednesdays at 4:30 PM">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="email" class="form-label small fw-semibold">Official Club Contact Email</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ club.email or '' }}" placeholder="club@college.edu">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="instagram_handle" class="form-label small fw-semibold">Instagram Handle</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light">@</span>
+                                <input type="text" class="form-control" id="instagram_handle" name="instagram_handle" value="{{ club.instagram_handle or '' }}" placeholder="campus_club_official">
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="banner_url" class="form-label small fw-semibold">Banner Image URL</label>
+                            <input type="url" class="form-control" id="banner_url" name="banner_url" value="{{ club.banner_url or '' }}" placeholder="https://images.unsplash.com/...">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{{ url_for('coordinator_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Hub
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-floppy me-1"></i> Save Club Details
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

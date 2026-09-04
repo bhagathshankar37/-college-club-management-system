@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Clubs - Administrator{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('admin_dashboard') }}">Admin Panel</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Clubs</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">College Clubs Management</h2>
+            <p class="text-muted mb-0">Oversee all registered clubs, assign student coordinators, and track membership growth.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('admin_club_new') }}" class="btn btn-primary-custom">
+                <i class="bi bi-plus-lg me-1"></i> Register New Club
+            </a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="custom-card-no-hover p-4">
+        {% if clubs %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th>Club</th>
+                            <th>Category</th>
+                            <th>Assigned Coordinator</th>
+                            <th>Members</th>
+                            <th>Events</th>
+                            <th>Location</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in clubs %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ c.banner_url or 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&auto=format&fit=crop' }}" alt="{{ c.name }}" class="rounded-3" style="width: 48px; height: 48px; object-fit: cover;">
+                                        <div>
+                                            <a href="{{ url_for('club_detail', club_id=c.id) }}" class="fw-bold text-dark text-decoration-none">
+                                                {{ c.name }}
+                                            </a>
+                                            <div class="small text-muted">/{{ c.slug }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="category-pill">{{ c.category }}</span>
+                                </td>
+                                <td>
+                                    {% if c.coordinator %}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img src="{{ c.coordinator.get_avatar() }}" alt="Avatar" class="user-avatar-sm" style="width: 26px; height: 26px;">
+                                            <div>
+                                                <div class="small fw-semibold">{{ c.coordinator.full_name }}</div>
+                                                <small class="text-muted">@{{ c.coordinator.username }}</small>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-circle me-1"></i> Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-primary border fw-bold">{{ c.active_members_count }}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-secondary border">{{ c.events|length }}</span>
+                                </td>
+                                <td class="small text-muted">{{ c.room_or_location }}</td>
+                                <td class="text-end">
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{{ url_for('admin_club_edit', club_id=c.id) }}" class="btn btn-outline-secondary" title="Edit Club & Coordinator">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <form method="POST" action="{{ url_for('admin_club_delete', club_id=c.id) }}" class="d-inline" onsubmit="return confirm('Permanently delete {{ c.name }} and all its events?');">
+                                            <button type="submit" class="btn btn-outline-danger" title="Delete Club">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state py-5">
+                <i class="bi bi-grid empty-state-icon"></i>
+                <h5>No Clubs Registered</h5>
+                <p class="text-muted">Get started by creating the first student club.</p>
+                <a href="{{ url_for('admin_club_new') }}" class="btn btn-primary-custom">Register First Club</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

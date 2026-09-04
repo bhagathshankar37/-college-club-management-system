@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found (404) - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="custom-card-no-hover p-5 my-4">
+                <div class="text-primary mb-3">
+                    <i class="bi bi-compass fs-1" style="font-size: 4.5rem !important;"></i>
+                </div>
+                <h1 class="display-4 fw-bold mb-2">404</h1>
+                <h3 class="fw-bold mb-3">Page Not Found</h3>
+                <p class="text-muted mb-4">The club, event, or page you are looking for might have been removed, had its name changed, or is temporarily unavailable.</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{{ url_for('index') }}" class="btn btn-primary-custom">
+                        <i class="bi bi-house-door me-1"></i> Return Home
+                    </a>
+                    <a href="{{ url_for('clubs_list') }}" class="btn btn-outline-secondary">
+                        <i class="bi bi-grid me-1"></i> Browse Clubs
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

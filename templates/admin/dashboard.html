@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Dashboard - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Admin Header -->
+    <div class="custom-card p-4 mb-4 border-0 shadow-sm" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff;">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="stat-icon-wrapper bg-warning text-dark">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <div>
+                    <span class="badge bg-danger text-uppercase px-2 py-1 mb-1">Super Admin Panel</span>
+                    <h2 class="fw-bold mb-0 text-white">System Administration</h2>
+                    <p class="text-muted small mb-0">Platform Overview, User RBAC Control, and Organization Directory</p>
+                </div>
+            </div>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('admin_club_new') }}" class="btn btn-warning text-dark fw-bold btn-sm">
+                    <i class="bi bi-plus-circle-fill me-1"></i> Register New Club
+                </a>
+                <a href="{{ url_for('admin_users') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-people-fill me-1"></i> User Directory
+                </a>
+                <a href="{{ url_for('admin_clubs') }}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-grid-fill me-1"></i> Manage Clubs
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-primary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.total_users }}</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-info">
+                    <i class="bi bi-collection-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.total_clubs }}</div>
+                    <div class="stat-label">Active Clubs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-success">
+                    <i class="bi bi-calendar-event-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.total_events }}</div>
+                    <div class="stat-label">Total Events</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-warning">
+                    <i class="bi bi-patch-check-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ stats.total_memberships }}</div>
+                    <div class="stat-label">Club Memberships</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Recent Users Table -->
+        <div class="col-lg-7">
+            <div class="custom-card-no-hover p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-people text-primary me-2"></i> Recently Registered Users</h5>
+                    <a href="{{ url_for('admin_users') }}" class="small text-primary text-decoration-none fw-semibold">View All Users</a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th>User</th>
+                                <th>Email</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in recent_users %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <img src="{{ u.get_avatar() }}" alt="Avatar" class="user-avatar-sm">
+                                            <div>
+                                                <div class="fw-bold small">{{ u.full_name }}</div>
+                                                <small class="text-muted">@{{ u.username }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="small text-muted">{{ u.email }}</td>
+                                    <td>
+                                        {% if u.role == 'admin' %}
+                                            <span class="badge bg-danger">Admin</span>
+                                        {% elif u.role == 'coordinator' %}
+                                            <span class="badge bg-info text-dark">Coordinator</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Student</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ 'badge-status-active' if u.is_active else 'badge-status-inactive' }}">
+                                            {{ 'Active' if u.is_active else 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <form method="POST" action="{{ url_for('admin_user_toggle', user_id=u.id) }}" class="d-inline">
+                                            <button type="submit" class="btn btn-sm {{ 'btn-outline-warning' if u.is_active else 'btn-outline-success' }}" title="Toggle Active Status">
+                                                <i class="bi {{ 'bi-lock' if u.is_active else 'bi-unlock' }}"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Managed Clubs Directory -->
+        <div class="col-lg-5">
+            <div class="custom-card-no-hover p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-grid-fill text-warning me-2"></i> Club Directory</h5>
+                    <a href="{{ url_for('admin_clubs') }}" class="small text-primary text-decoration-none fw-semibold">Manage All</a>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    {% for c in clubs %}
+                        <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold small mb-0">{{ c.name }}</h6>
+                                <small class="text-muted">
+                                    {{ c.category }} • Lead: {{ c.coordinator.full_name if c.coordinator else 'Unassigned' }}
+                                </small>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge bg-light text-primary border">{{ c.active_members_count }} members</span>
+                                <a href="{{ url_for('admin_club_edit', club_id=c.id) }}" class="btn btn-sm btn-outline-secondary py-0 px-2" title="Edit Club">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

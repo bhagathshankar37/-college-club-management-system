@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}{{ 'Edit Event' if event else 'Create New Event' }} - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-3">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('coordinator_dashboard') }}">Coordinator Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ 'Edit Event' if event else 'New Event' }}</li>
+                </ol>
+            </nav>
+
+            <div class="custom-card-no-hover p-4 p-md-5">
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="stat-icon-wrapper stat-icon-primary">
+                        <i class="bi bi-calendar-event-fill"></i>
+                    </div>
+                    <div>
+                        <h3 class="fw-bold mb-0">{{ 'Edit Event' if event else 'Create Club Event' }}</h3>
+                        <p class="text-muted small mb-0">Publish an upcoming workshop, seminar, competition, or general club meeting.</p>
+                    </div>
+                </div>
+
+                <form method="POST">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label for="title" class="form-label small fw-semibold">Event Title</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{ event.title if event else '' }}" placeholder="e.g. Full-Stack Web Development Bootcamp" required autofocus>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="description" class="form-label small fw-semibold">Full Event Description & Agenda</label>
+                            <textarea class="form-control" id="description" name="description" rows="5" placeholder="Detailed event agenda, speaker info, prerequisites, and learning outcomes..." required>{{ event.description if event else '' }}</textarea>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="location" class="form-label small fw-semibold">Venue / Room / Link</label>
+                            <input type="text" class="form-control" id="location" name="location" value="{{ event.location if event else '' }}" placeholder="e.g. Main Tech Auditorium or Zoom Link" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="venue_type" class="form-label small fw-semibold">Venue Format</label>
+                            <select class="form-select" id="venue_type" name="venue_type" required>
+                                <option value="On-Campus" {% if event and event.venue_type == 'On-Campus' %}selected{% endif %}>On-Campus (Classroom / Hall)</option>
+                                <option value="Auditorium" {% if event and event.venue_type == 'Auditorium' %}selected{% endif %}>Grand Auditorium</option>
+                                <option value="Lab" {% if event and event.venue_type == 'Lab' %}selected{% endif %}>Computer / Hardware Lab</option>
+                                <option value="Online" {% if event and event.venue_type == 'Online' %}selected{% endif %}>Virtual / Online Stream</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="event_date" class="form-label small fw-semibold">Start Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="event_date" name="event_date" value="{{ event.event_date.strftime('%Y-%m-%dT%H:%M') if event and event.event_date else '' }}" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="registration_deadline" class="form-label small fw-semibold">RSVP Deadline (Optional)</label>
+                            <input type="datetime-local" class="form-control" id="registration_deadline" name="registration_deadline" value="{{ event.registration_deadline.strftime('%Y-%m-%dT%H:%M') if event and event.registration_deadline else '' }}">
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="max_capacity" class="form-label small fw-semibold">Seat Capacity</label>
+                            <input type="number" class="form-control" id="max_capacity" name="max_capacity" value="{{ event.max_capacity if event else 100 }}" min="1" max="1000" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="fee" class="form-label small fw-semibold">Registration Fee ($ / USD)</label>
+                            <input type="number" step="0.01" class="form-control" id="fee" name="fee" value="{{ event.fee if event else 0.0 }}" min="0" required>
+                            <small class="text-muted" style="font-size: 0.75rem;">Enter 0 for Free admission</small>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="image_url" class="form-label small fw-semibold">Cover Image URL</label>
+                            <input type="url" class="form-control" id="image_url" name="image_url" value="{{ event.image_url if event else '' }}" placeholder="https://images.unsplash.com/...">
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <a href="{{ url_for('coordinator_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="bi bi-calendar-check me-1"></i> {{ 'Update Event' if event else 'Publish Event' }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Attendee Roster - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('coordinator_dashboard') }}">Coordinator Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Attendee Roster</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">{{ event.title }}</h2>
+            <p class="text-muted mb-0">
+                <i class="bi bi-calendar3 me-1"></i> {{ event.event_date.strftime('%b %d, %Y at %I:%M %p') }} • 
+                <i class="bi bi-geo-alt me-1"></i> {{ event.location }}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ url_for('coordinator_dashboard') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Workspace
+            </a>
+        </div>
+    </div>
+
+    <!-- Capacity Card -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-primary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ attendees|length }} / {{ event.max_capacity }}</div>
+                    <div class="stat-label">Confirmed Seats</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ event.available_seats }}</div>
+                    <div class="stat-label">Remaining Seats</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-info">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+                <div>
+                    <div class="stat-number">${{ (attendees|length * event.fee)|round(2) }}</div>
+                    <div class="stat-label">Revenue Collected</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendee List Table -->
+    <div class="custom-card-no-hover p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">Registered Student List</h5>
+        </div>
+
+        {% if attendees %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th>#</th>
+                            <th>Student</th>
+                            <th>Email</th>
+                            <th>Department & Year</th>
+                            <th>Pass Code</th>
+                            <th>RSVP Timestamp</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reg in attendees %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img src="{{ reg.user.get_avatar() }}" alt="Avatar" class="user-avatar-sm">
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ reg.user.full_name }}</div>
+                                            <small class="text-muted">@{{ reg.user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="small text-muted">{{ reg.user.email }}</td>
+                                <td class="small">
+                                    <div>{{ reg.user.department }}</div>
+                                    <span class="badge bg-light text-secondary border">{{ reg.user.year_of_study }}</span>
+                                </td>
+                                <td>
+                                    <span class="ticket-badge">{{ reg.ticket_code }}</span>
+                                </td>
+                                <td class="small text-muted">{{ reg.registered_at.strftime('%b %d, %I:%M %p') }}</td>
+                                <td>
+                                    <span class="badge {{ 'bg-success' if reg.status == 'registered' else 'bg-secondary' }}">
+                                        {{ reg.status }}
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ url_for('coordinator_attendee_status_toggle', registration_id=reg.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm {{ 'btn-outline-success' if reg.status == 'registered' else 'btn-outline-secondary' }}" title="Toggle check-in status">
+                                            <i class="bi bi-check-lg"></i> {{ 'Check-in' if reg.status == 'registered' else 'Attended' }}
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state py-5">
+                <i class="bi bi-ticket-detailed empty-state-icon"></i>
+                <h5>No Registrations Yet</h5>
+                <p class="text-muted">When students RSVP for this event, their contact info and ticket codes will be listed here.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

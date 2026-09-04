@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}{{ club.name }} - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Club Banner Header -->
+    <div class="custom-card p-0 mb-4 overflow-hidden border-0 shadow-md">
+        <div class="position-relative">
+            <img src="{{ club.banner_url or 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&auto=format&fit=crop' }}" alt="{{ club.name }}" class="banner-cover">
+            <div class="position-absolute bottom-0 start-0 w-100 p-4" style="background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.5) 70%, transparent 100%);">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-end gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="category-pill bg-primary text-white border-0">{{ club.category }}</span>
+                            <span class="badge bg-light text-dark"><i class="bi bi-people-fill me-1"></i> {{ club.active_members_count }} Enrolled</span>
+                        </div>
+                        <h1 class="text-white fw-bold mb-1">{{ club.name }}</h1>
+                        <p class="text-light text-opacity-75 small mb-0">
+                            <i class="bi bi-geo-alt me-1"></i> {{ club.room_or_location }} • 
+                            <i class="bi bi-clock me-1"></i> {{ club.meeting_schedule }}
+                        </p>
+                    </div>
+
+                    <!-- Action Button: Join / Leave / Coordinator Shortcut -->
+                    <div>
+                        {% if current_user and current_user.is_student() %}
+                            {% if is_member %}
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-success-subtle text-success py-2 px-3 border border-success-subtle fs-6">
+                                        <i class="bi bi-patch-check-fill me-1"></i> Member
+                                    </span>
+                                    <form method="POST" action="{{ url_for('club_leave', club_id=club.id) }}" onsubmit="return confirm('Are you sure you want to leave {{ club.name }}?');">
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-box-arrow-left"></i> Leave
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <form method="POST" action="{{ url_for('club_join', club_id=club.id) }}">
+                                    <button type="submit" class="btn btn-primary-custom btn-lg">
+                                        <i class="bi bi-plus-circle-fill me-1"></i> Join This Club
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% elif not session.get('user_id') %}
+                            <a href="{{ url_for('login') }}" class="btn btn-primary-custom btn-lg">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Log In to Join Club
+                            </a>
+                        {% elif current_user and (current_user.is_admin() or (current_user.is_coordinator() and club.coordinator_id == current_user.id)) %}
+                            <a href="{{ url_for('coordinator_dashboard' if current_user.is_coordinator() else 'admin_club_edit', club_id=club.id) }}" class="btn btn-warning text-dark fw-bold">
+                                <i class="bi bi-pencil-square me-1"></i> Manage Club
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-pills mb-4 gap-2" id="clubDetailTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active rounded-pill px-4" id="overview-tab" data-bs-toggle="pill" data-bs-target="#overview" type="button" role="tab">
+                <i class="bi bi-info-circle me-1"></i> Overview
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="events-tab" data-bs-toggle="pill" data-bs-target="#events" type="button" role="tab">
+                <i class="bi bi-calendar-event me-1"></i> Events ({{ club.events|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="announcements-tab" data-bs-toggle="pill" data-bs-target="#announcements" type="button" role="tab">
+                <i class="bi bi-megaphone me-1"></i> Bulletins ({{ club.announcements|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link rounded-pill px-4" id="members-tab" data-bs-toggle="pill" data-bs-target="#members" type="button" role="tab">
+                <i class="bi bi-people me-1"></i> Roster ({{ members|length }})
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Contents -->
+    <div class="tab-content" id="clubDetailTabsContent">
+        <!-- Overview Tab -->
+        <div class="tab-pane fade show active" id="overview" role="tabpanel">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="custom-card-no-hover p-4 mb-4">
+                        <h4 class="fw-bold mb-3">About {{ club.name }}</h4>
+                        <p class="text-secondary leading-relaxed" style="white-space: pre-line;">{{ club.description }}</p>
+                    </div>
+
+                    <!-- Upcoming Events Highlight -->
+                    <div class="custom-card-no-hover p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="bi bi-calendar3 text-primary me-2"></i> Upcoming Club Events</h5>
+                            <button class="btn btn-sm btn-link text-decoration-none" onclick="document.getElementById('events-tab').click()">View All</button>
+                        </div>
+                        
+                        <div class="row g-3">
+                            {% for event in upcoming_events[:2] %}
+                                <div class="col-md-6">
+                                    <div class="border rounded-3 p-3 h-100 d-flex flex-column justify-content-between bg-light">
+                                        <div>
+                                            <div class="d-flex justify-content-between small text-muted mb-1">
+                                                <span><i class="bi bi-calendar3 me-1"></i> {{ event.event_date.strftime('%b %d') }}</span>
+                                                <span class="badge {{ 'bg-success' if event.fee == 0 else 'bg-primary' }}">{{ 'FREE' if event.fee == 0 else '$' ~ event.fee }}</span>
+                                            </div>
+                                            <h6 class="fw-bold mb-1">{{ event.title }}</h6>
+                                            <p class="text-muted small mb-2">{{ event.description[:80] }}...</p>
+                                        </div>
+                                        <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-primary w-100">
+                                            Event Details
+                                        </a>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">No upcoming events right now.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar Fast Facts -->
+                <div class="col-lg-4">
+                    <!-- Coordinator Info Card -->
+                    <div class="custom-card-no-hover p-4 mb-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-person-badge text-primary me-2"></i> Club Leadership</h6>
+                        {% if club.coordinator %}
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{{ club.coordinator.get_avatar() }}" alt="Avatar" class="user-avatar-sm" style="width: 48px; height: 48px;">
+                                <div>
+                                    <h6 class="fw-bold mb-0">{{ club.coordinator.full_name }}</h6>
+                                    <span class="badge bg-info text-dark" style="font-size: 0.7rem;">Lead Coordinator</span>
+                                    <div class="small text-muted mt-1">{{ club.coordinator.department }}</div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <p class="text-muted small mb-0">No lead coordinator assigned.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Club Contact Details -->
+                    <div class="custom-card-no-hover p-4">
+                        <h6 class="fw-bold mb-3"><i class="bi bi-info-circle text-info me-2"></i> Quick Information</h6>
+                        <ul class="list-unstyled small d-flex flex-column gap-2 mb-0">
+                            <li><i class="bi bi-geo-alt text-primary me-2"></i> <strong>Location:</strong> {{ club.room_or_location }}</li>
+                            <li><i class="bi bi-calendar3 text-primary me-2"></i> <strong>Schedule:</strong> {{ club.meeting_schedule }}</li>
+                            <li><i class="bi bi-envelope text-primary me-2"></i> <strong>Email:</strong> {{ club.email or 'clubs@college.edu' }}</li>
+                            {% if club.instagram_handle %}
+                                <li><i class="bi bi-instagram text-danger me-2"></i> <strong>Instagram:</strong> @{{ club.instagram_handle }}</li>
+                            {% endif %}
+                            <li><i class="bi bi-people text-primary me-2"></i> <strong>Members:</strong> {{ club.active_members_count }} registered</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Events Tab -->
+        <div class="tab-pane fade" id="events" role="tabpanel">
+            <div class="row g-4">
+                {% for event in club.events %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="custom-card h-100 d-flex flex-column">
+                            <div class="position-relative">
+                                <img src="{{ event.image_url or 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop' }}" alt="{{ event.title }}" class="event-card-img">
+                                <div class="date-badge position-absolute top-0 start-0 m-3">
+                                    <div class="month">{{ event.event_date.strftime('%b') }}</div>
+                                    <div class="day">{{ event.event_date.strftime('%d') }}</div>
+                                </div>
+                            </div>
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <h5 class="fw-bold mb-2">{{ event.title }}</h5>
+                                <p class="text-muted small flex-grow-1 mb-3">{{ event.description[:110] }}...</p>
+                                <div class="d-flex justify-content-between small text-muted mb-3">
+                                    <span><i class="bi bi-geo-alt me-1"></i> {{ event.location }}</span>
+                                    <span>{{ event.registered_count }}/{{ event.max_capacity }} RSVP</span>
+                                </div>
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary btn-sm w-100">
+                                    View Event Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-state py-5">
+                            <i class="bi bi-calendar-x empty-state-icon"></i>
+                            <h5>No Events Scheduled for this Club</h5>
+                            <p class="text-muted">Stay tuned for future workshops and club activities.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Announcements Tab -->
+        <div class="tab-pane fade" id="announcements" role="tabpanel">
+            <div class="custom-card-no-hover p-4">
+                {% if club.announcements %}
+                    <div class="list-group list-group-flush">
+                        {% for ann in club.announcements %}
+                            <div class="list-group-item px-0 py-3 border-light-subtle">
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <span class="badge badge-priority-{{ ann.priority }}">{{ ann.priority }}</span>
+                                    <small class="text-muted">{{ ann.created_at.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                    <span class="small text-muted">• Posted by {{ ann.author.full_name }}</span>
+                                </div>
+                                <h5 class="fw-bold mb-1">{{ ann.title }}</h5>
+                                <p class="text-muted mb-0" style="white-space: pre-line;">{{ ann.content }}</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state py-5">
+                        <i class="bi bi-megaphone empty-state-icon"></i>
+                        <h5>No Announcements Posted Yet</h5>
+                        <p class="text-muted">The club coordinator will post recruitment calls and meeting updates here.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Members Tab -->
+        <div class="tab-pane fade" id="members" role="tabpanel">
+            <div class="custom-card-no-hover p-4">
+                <h5 class="fw-bold mb-3">Enrolled Members ({{ members|length }})</h5>
+                <div class="row g-3">
+                    {% for mem in members %}
+                        <div class="col-md-4 col-sm-6">
+                            <div class="d-flex align-items-center gap-3 p-3 rounded-3 bg-light border">
+                                <img src="{{ mem.user.get_avatar() }}" alt="Avatar" class="user-avatar-sm" style="width: 42px; height: 42px;">
+                                <div class="overflow-hidden">
+                                    <h6 class="fw-bold mb-0 text-truncate">{{ mem.user.full_name }}</h6>
+                                    <small class="text-muted d-block">{{ mem.user.department }}</small>
+                                    <span class="badge bg-secondary text-uppercase" style="font-size: 0.65rem;">{{ mem.role }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <p class="text-muted text-center py-4 mb-0">No active members yet. Be the first to join!</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

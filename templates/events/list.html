@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}Events & Workshops - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Page Header -->
+    <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="category-pill mb-2"><i class="bi bi-calendar-check-fill"></i> Campus Calendar</span>
+        <h2 class="fw-bold mb-2">College Events, Workshops & Competitions</h2>
+        <p class="text-muted">Register for technical bootcamps, cultural nights, hackathons, and guest seminars.</p>
+    </div>
+
+    <!-- Search & Tabs -->
+    <div class="custom-card-no-hover p-3 mb-4">
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="eventSearchInput" placeholder="Search events by name, club, or venue...">
+                </div>
+            </div>
+            <div class="col-md-6">
+                <ul class="nav nav-pills justify-content-md-end gap-2" id="eventListTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active rounded-pill px-3 py-1" id="upcoming-events-tab" data-bs-toggle="pill" data-bs-target="#upcomingEventsPane" type="button" role="tab">
+                            Upcoming ({{ upcoming_events|length }})
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link rounded-pill px-3 py-1" id="past-events-tab" data-bs-toggle="pill" data-bs-target="#pastEventsPane" type="button" role="tab">
+                            Past Events ({{ past_events|length }})
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="eventListTabContent">
+        <!-- Upcoming Events Tab -->
+        <div class="tab-pane fade show active" id="upcomingEventsPane" role="tabpanel">
+            <div class="row g-4" id="upcomingEventsContainer">
+                {% for event in upcoming_events %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="custom-card h-100 d-flex flex-column event-card-item"
+                             data-title="{{ event.title }}"
+                             data-club="{{ event.club.name }}"
+                             data-location="{{ event.location }}">
+                            
+                            <div class="position-relative">
+                                <img src="{{ event.image_url or 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop' }}" alt="{{ event.title }}" class="event-card-img">
+                                <div class="date-badge position-absolute top-0 start-0 m-3">
+                                    <div class="month">{{ event.event_date.strftime('%b') }}</div>
+                                    <div class="day">{{ event.event_date.strftime('%d') }}</div>
+                                </div>
+                                <span class="badge bg-dark bg-opacity-75 text-white position-absolute bottom-0 end-0 m-3 px-2 py-1">
+                                    <i class="bi bi-clock me-1"></i> {{ event.event_date.strftime('%I:%M %p') }}
+                                </span>
+                            </div>
+
+                            <div class="p-4 d-flex flex-column flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <a href="{{ url_for('club_detail', club_id=event.club.id) }}" class="badge bg-light text-primary border text-decoration-none">
+                                        {{ event.club.name }}
+                                    </a>
+                                    <span class="badge {{ 'bg-success-subtle text-success' if event.fee == 0 else 'bg-warning-subtle text-dark' }}">
+                                        {{ 'FREE' if event.fee == 0 else '$' ~ event.fee }}
+                                    </span>
+                                </div>
+
+                                <h5 class="fw-bold mb-2">
+                                    <a href="{{ url_for('event_detail', event_id=event.id) }}" class="text-dark text-decoration-none">
+                                        {{ event.title }}
+                                    </a>
+                                </h5>
+                                <p class="text-muted small flex-grow-1 mb-3">{{ event.description[:110] }}...</p>
+
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span><i class="bi bi-geo-alt me-1"></i> {{ event.location }}</span>
+                                        <span>{{ event.registered_count }}/{{ event.max_capacity }} Registered</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        {% set pct = (event.registered_count / event.max_capacity * 100)|round|int if event.max_capacity > 0 else 0 %}
+                                        <div class="progress-bar {{ 'bg-danger' if pct >= 90 else 'bg-primary' }}" role="progressbar" style="width: {{ pct }}%;"></div>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-top d-flex justify-content-between align-items-center">
+                                    {% if current_user and current_user.is_student() %}
+                                        {% if event.is_user_registered(current_user.id) %}
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle py-2 px-3">
+                                                <i class="bi bi-ticket-perforated-fill me-1"></i> RSVP'd
+                                            </span>
+                                        {% elif event.is_full %}
+                                            <span class="badge bg-danger-subtle text-danger py-2 px-3">Full Capacity</span>
+                                        {% else %}
+                                            <form method="POST" action="{{ url_for('event_register', event_id=event.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-primary-custom">
+                                                    <i class="bi bi-ticket-fill me-1"></i> Quick RSVP
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    {% elif not session.get('user_id') %}
+                                        <a href="{{ url_for('login') }}" class="btn btn-sm btn-outline-primary">
+                                            Sign In to RSVP
+                                        </a>
+                                    {% endif %}
+
+                                    <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-sm btn-outline-secondary">
+                                        Details <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-state py-5">
+                            <i class="bi bi-calendar-x empty-state-icon"></i>
+                            <h5>No Upcoming Events Scheduled</h5>
+                            <p class="text-muted">Check back soon for new club events, seminars, and competitions.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Past Events Tab -->
+        <div class="tab-pane fade" id="pastEventsPane" role="tabpanel">
+            <div class="row g-4">
+                {% for event in past_events %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="custom-card-no-hover h-100 p-4 d-flex flex-column opacity-75">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-muted border">{{ event.club.name }}</span>
+                                <span class="badge bg-secondary">Concluded</span>
+                            </div>
+                            <h5 class="fw-bold mb-2">{{ event.title }}</h5>
+                            <p class="text-muted small flex-grow-1 mb-3">{{ event.description[:100] }}...</p>
+                            <div class="small text-muted pt-2 border-top">
+                                <i class="bi bi-calendar3 me-1"></i> Held on {{ event.event_date.strftime('%B %d, %Y') }} • {{ event.location }}
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-state py-5">
+                            <i class="bi bi-clock-history empty-state-icon"></i>
+                            <h5>No Past Events</h5>
+                            <p class="text-muted">Completed events and workshops will appear here in the archive.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- No Search Results -->
+    <div id="noEventResults" class="empty-state py-5 my-4" style="display: none;">
+        <i class="bi bi-search empty-state-icon"></i>
+        <h5>No Events Match Your Search</h5>
+        <p class="text-muted">Try searching with a different term.</p>
+    </div>
+</div>
+{% endblock %}

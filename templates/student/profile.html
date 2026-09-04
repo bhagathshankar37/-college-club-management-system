@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile & Settings - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <img src="{{ user.get_avatar() }}" alt="Avatar" class="user-avatar-lg">
+                <div>
+                    <h3 class="fw-bold mb-0">{{ user.full_name }}</h3>
+                    <p class="text-muted small mb-0">
+                        <span class="badge bg-primary text-uppercase me-1">{{ user.role }}</span>
+                        @{{ user.username }} • Member since {{ user.created_at.strftime('%B %Y') }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- Personal Info Update Form -->
+                <div class="col-12">
+                    <div class="custom-card-no-hover p-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i> Account Details</h5>
+                        <form method="POST" action="{{ url_for('student_profile') }}">
+                            <input type="hidden" name="action" value="update_profile">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold">Username (Fixed)</label>
+                                    <input type="text" class="form-control bg-light" value="{{ user.username }}" readonly disabled>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-semibold">Email Address (Fixed)</label>
+                                    <input type="email" class="form-control bg-light" value="{{ user.email }}" readonly disabled>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="full_name" class="form-label small fw-semibold">Full Name</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" value="{{ user.full_name }}" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="avatar_url" class="form-label small fw-semibold">Avatar Image URL (Optional)</label>
+                                    <input type="url" class="form-control" id="avatar_url" name="avatar_url" value="{{ user.avatar_url or '' }}" placeholder="https://...">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="department" class="form-label small fw-semibold">Department / Major</label>
+                                    <select class="form-select" id="department" name="department">
+                                        <option value="Computer Science" {% if user.department == 'Computer Science' %}selected{% endif %}>Computer Science & Eng</option>
+                                        <option value="Information Technology" {% if user.department == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                                        <option value="Electronics & Communication" {% if user.department == 'Electronics & Communication' %}selected{% endif %}>Electronics & Comm.</option>
+                                        <option value="Mechanical Engineering" {% if user.department == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+                                        <option value="Civil Engineering" {% if user.department == 'Civil Engineering' %}selected{% endif %}>Civil Engineering</option>
+                                        <option value="Business Administration" {% if user.department == 'Business Administration' %}selected{% endif %}>Business Administration</option>
+                                        <option value="Design & Media" {% if user.department == 'Design & Media' %}selected{% endif %}>Design & Media</option>
+                                        <option value="Biotechnology" {% if user.department == 'Biotechnology' %}selected{% endif %}>Biotechnology</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="year_of_study" class="form-label small fw-semibold">Year of Study</label>
+                                    <select class="form-select" id="year_of_study" name="year_of_study">
+                                        <option value="1st Year" {% if user.year_of_study == '1st Year' %}selected{% endif %}>1st Year (Freshman)</option>
+                                        <option value="2nd Year" {% if user.year_of_study == '2nd Year' %}selected{% endif %}>2nd Year (Sophomore)</option>
+                                        <option value="3rd Year" {% if user.year_of_study == '3rd Year' %}selected{% endif %}>3rd Year (Junior)</option>
+                                        <option value="4th Year" {% if user.year_of_study == '4th Year' %}selected{% endif %}>4th Year (Senior)</option>
+                                        <option value="Postgraduate" {% if user.year_of_study == 'Postgraduate' %}selected{% endif %}>Postgraduate</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary-custom">
+                                    <i class="bi bi-floppy me-1"></i> Save Profile Details
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Change Password Form -->
+                <div class="col-12">
+                    <div class="custom-card-no-hover p-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-shield-lock text-primary me-2"></i> Change Password</h5>
+                        <form method="POST" action="{{ url_for('student_profile') }}">
+                            <input type="hidden" name="action" value="change_password">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label for="current_password" class="form-label small fw-semibold">Current Password</label>
+                                    <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="new_password" class="form-label small fw-semibold">New Password</label>
+                                    <input type="password" class="form-control" id="new_password" name="new_password" minlength="6" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="confirm_password" class="form-label small fw-semibold">Confirm New Password</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" minlength="6" required>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-key me-1"></i> Update Password
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Announcements & Bulletins - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="text-center max-w-700 mx-auto mb-4">
+        <span class="category-pill mb-2"><i class="bi bi-megaphone-fill"></i> Official Notices</span>
+        <h2 class="fw-bold mb-2">Campus-Wide & Club Announcements</h2>
+        <p class="text-muted">Stay up to date with official college club bulletins, recruitment notices, and event schedules.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            {% if announcements %}
+                <div class="d-flex flex-column gap-3">
+                    {% for ann in announcements %}
+                        <div class="custom-card-no-hover p-4 shadow-sm border-start border-4 {{ 'border-danger' if ann.priority == 'urgent' else ('border-warning' if ann.priority == 'important' else 'border-primary') }}">
+                            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge badge-priority-{{ ann.priority }} text-uppercase">{{ ann.priority }}</span>
+                                    {% if ann.club %}
+                                        <a href="{{ url_for('club_detail', club_id=ann.club.id) }}" class="badge bg-light text-primary border text-decoration-none">
+                                            {{ ann.club.name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="badge bg-dark text-white">Campus Wide</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted">
+                                    <i class="bi bi-clock me-1"></i> {{ ann.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                </small>
+                            </div>
+
+                            <h4 class="fw-bold mb-2">{{ ann.title }}</h4>
+                            <p class="text-secondary mb-3" style="white-space: pre-line;">{{ ann.content }}</p>
+
+                            <div class="d-flex align-items-center justify-content-between pt-2 border-top small text-muted">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ ann.author.get_avatar() }}" alt="Avatar" class="user-avatar-sm" style="width: 24px; height: 24px;">
+                                    <span>Posted by <strong>{{ ann.author.full_name }}</strong> ({{ ann.author.role|title }})</span>
+                                </div>
+
+                                {% if current_user and (current_user.is_admin() or (current_user.is_coordinator() and ann.club and ann.club.coordinator_id == current_user.id)) %}
+                                    <form method="POST" action="{{ url_for('coordinator_announcement_delete', announcement_id=ann.id) }}" onsubmit="return confirm('Delete this announcement?');">
+                                        <button type="submit" class="btn btn-sm btn-link text-danger text-decoration-none p-0">
+                                            <i class="bi bi-trash"></i> Delete
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state py-5">
+                    <i class="bi bi-megaphone empty-state-icon"></i>
+                    <h4>No Announcements at this Time</h4>
+                    <p class="text-muted">Check back later for news and updates from student organizations.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

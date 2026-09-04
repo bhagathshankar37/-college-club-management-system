@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Club Member Roster - {{ club.name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('coordinator_dashboard') }}">Coordinator Hub</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Members</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">Club Member Roster</h2>
+            <p class="text-muted mb-0">Total of <strong>{{ members|length }}</strong> enrolled students in {{ club.name }}.</p>
+        </div>
+        <a href="{{ url_for('coordinator_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Workspace
+        </a>
+    </div>
+
+    <div class="custom-card-no-hover p-4">
+        {% if members %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr class="small text-muted text-uppercase">
+                            <th>Student</th>
+                            <th>Contact Email</th>
+                            <th>Department & Year</th>
+                            <th>Club Role</th>
+                            <th>Joined Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for mem in members %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="{{ mem.user.get_avatar() }}" alt="Avatar" class="user-avatar-sm">
+                                        <div>
+                                            <div class="fw-bold text-dark">{{ mem.user.full_name }}</div>
+                                            <small class="text-muted">@{{ mem.user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="small text-muted">
+                                    <i class="bi bi-envelope me-1"></i> {{ mem.user.email }}
+                                </td>
+                                <td class="small">
+                                    <div>{{ mem.user.department }}</div>
+                                    <span class="badge bg-light text-secondary border">{{ mem.user.year_of_study }}</span>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('coordinator_member_role_update', membership_id=mem.id) }}" class="d-flex align-items-center gap-1">
+                                        <select name="role" class="form-select form-select-sm" style="width: 130px;" onchange="this.form.submit()">
+                                            <option value="Member" {% if mem.role == 'Member' %}selected{% endif %}>Member</option>
+                                            <option value="Core Member" {% if mem.role == 'Core Member' %}selected{% endif %}>Core Member</option>
+                                            <option value="Officer" {% if mem.role == 'Officer' %}selected{% endif %}>Officer</option>
+                                            <option value="Vice President" {% if mem.role == 'Vice President' %}selected{% endif %}>Vice President</option>
+                                        </select>
+                                    </form>
+                                </td>
+                                <td class="small text-muted">
+                                    {{ mem.joined_at.strftime('%b %d, %Y') }}
+                                </td>
+                                <td class="text-end">
+                                    <form method="POST" action="{{ url_for('coordinator_member_remove', membership_id=mem.id) }}" onsubmit="return confirm('Remove {{ mem.user.full_name }} from club?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Remove Member">
+                                            <i class="bi bi-person-x"></i> Remove
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-state py-5">
+                <i class="bi bi-people empty-state-icon"></i>
+                <h5>No Enrolled Members Yet</h5>
+                <p class="text-muted">Students who join your club will appear here in the active roster.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

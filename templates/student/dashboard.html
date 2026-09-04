@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Welcome Header Card -->
+    <div class="custom-card p-4 mb-4 bg-white border-0 shadow-sm" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
+        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <img src="{{ student.get_avatar() }}" alt="Avatar" class="user-avatar-lg">
+                <div>
+                    <span class="badge bg-primary-subtle text-primary fw-bold text-uppercase px-2 py-1 mb-1">Student Portal</span>
+                    <h3 class="fw-bold mb-0">Welcome back, {{ student.full_name }}!</h3>
+                    <p class="text-muted small mb-0">
+                        <i class="bi bi-mortarboard me-1"></i> {{ student.department }} • {{ student.year_of_study }} • <span class="text-secondary">@{{ student.username }}</span>
+                    </p>
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('clubs_list') }}" class="btn btn-primary-custom btn-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Discover Clubs
+                </a>
+                <a href="{{ url_for('events_list') }}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-calendar-event me-1"></i> Browse Events
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-primary">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ joined_clubs|length }}</div>
+                    <div class="stat-label">Joined Clubs</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-6">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-success">
+                    <i class="bi bi-ticket-perforated-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ registered_events|length }}</div>
+                    <div class="stat-label">Registered Events</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12">
+            <div class="stat-widget">
+                <div class="stat-icon-wrapper stat-icon-warning">
+                    <i class="bi bi-megaphone-fill"></i>
+                </div>
+                <div>
+                    <div class="stat-number">{{ recent_announcements|length }}</div>
+                    <div class="stat-label">Campus Bulletins</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content: Left Column (Events + Clubs) & Right Column (Announcements + Recommended) -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- My Registered Upcoming Events -->
+            <div class="custom-card-no-hover p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-calendar-check text-primary me-2"></i> My Upcoming Registered Events</h5>
+                    <a href="{{ url_for('student_my_events') }}" class="small text-primary text-decoration-none fw-semibold">View All ({{ registered_events|length }})</a>
+                </div>
+
+                {% if registered_events %}
+                    <div class="list-group list-group-flush">
+                        {% for reg in registered_events[:4] %}
+                            <div class="list-group-item px-0 py-3 d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="date-badge flex-shrink-0">
+                                        <div class="month">{{ reg.event.event_date.strftime('%b') }}</div>
+                                        <div class="day">{{ reg.event.event_date.strftime('%d') }}</div>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-light text-primary border mb-1">{{ reg.event.club.name }}</span>
+                                        <h6 class="fw-bold mb-1">
+                                            <a href="{{ url_for('event_detail', event_id=reg.event.id) }}" class="text-dark text-decoration-none hover-primary">
+                                                {{ reg.event.title }}
+                                            </a>
+                                        </h6>
+                                        <small class="text-muted">
+                                            <i class="bi bi-geo-alt me-1"></i> {{ reg.event.location }} • <i class="bi bi-clock me-1"></i> {{ reg.event.event_date.strftime('%I:%M %p') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="ticket-badge" title="Ticket Code">{{ reg.ticket_code }}</span>
+                                    <form method="POST" action="{{ url_for('event_cancel', event_id=reg.event.id) }}" onsubmit="return confirm('Are you sure you want to cancel registration?');">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancel RSVP">
+                                            <i class="bi bi-x-circle"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state py-4">
+                        <i class="bi bi-ticket-detailed text-muted fs-1 mb-2"></i>
+                        <h6>No Registered Events Yet</h6>
+                        <p class="text-muted small mb-3">Explore exciting upcoming workshops and reserve your spot today.</p>
+                        <a href="{{ url_for('events_list') }}" class="btn btn-sm btn-primary-custom">Browse Events</a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- My Joined Clubs -->
+            <div class="custom-card-no-hover p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0"><i class="bi bi-collection-fill text-primary me-2"></i> My Joined Clubs</h5>
+                    <a href="{{ url_for('student_my_clubs') }}" class="small text-primary text-decoration-none fw-semibold">Manage Clubs</a>
+                </div>
+
+                {% if joined_clubs %}
+                    <div class="row g-3">
+                        {% for mem in joined_clubs %}
+                            <div class="col-md-6">
+                                <div class="custom-card h-100 p-3 d-flex flex-column">
+                                    <div class="d-flex align-items-center gap-3 mb-2">
+                                        <img src="{{ mem.club.banner_url or 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&auto=format&fit=crop' }}" alt="{{ mem.club.name }}" class="rounded-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <div class="overflow-hidden">
+                                            <h6 class="fw-bold mb-0 text-truncate">{{ mem.club.name }}</h6>
+                                            <span class="badge bg-light text-muted border" style="font-size: 0.7rem;">{{ mem.role }}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted small flex-grow-1 mb-3">{{ mem.club.short_description[:80] }}...</p>
+                                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                                        <small class="text-muted"><i class="bi bi-calendar-event me-1"></i> {{ mem.club.upcoming_events_count }} upcoming</small>
+                                        <a href="{{ url_for('club_detail', club_id=mem.club.id) }}" class="btn btn-sm btn-outline-primary py-1">View Hub</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state py-4">
+                        <i class="bi bi-people text-muted fs-1 mb-2"></i>
+                        <h6>You haven't joined any clubs yet</h6>
+                        <p class="text-muted small mb-3">Join clubs aligned with your skills, hobbies, and career goals.</p>
+                        <a href="{{ url_for('clubs_list') }}" class="btn btn-sm btn-primary-custom">Explore Clubs</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Announcements & Recommended Clubs -->
+        <div class="col-lg-4">
+            <!-- Recent Announcements -->
+            <div class="custom-card-no-hover p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-megaphone-fill text-warning me-2"></i> Campus Bulletins</h6>
+                    <a href="{{ url_for('announcements_list') }}" class="small text-muted text-decoration-none">All</a>
+                </div>
+
+                <div class="list-group list-group-flush">
+                    {% for ann in recent_announcements[:4] %}
+                        <div class="list-group-item px-0 py-2 border-light-subtle">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge badge-priority-{{ ann.priority }}">{{ ann.priority }}</span>
+                                <small class="text-muted">{{ ann.created_at.strftime('%b %d') }}</small>
+                            </div>
+                            <h6 class="fw-semibold small mb-1">{{ ann.title }}</h6>
+                            <p class="text-muted small mb-0">{{ ann.content[:90] }}...</p>
+                            <small class="text-primary fw-medium">{{ ann.club.name if ann.club else 'Campus General' }}</small>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">No active bulletins.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recommended Clubs To Explore -->
+            <div class="custom-card-no-hover p-4">
+                <h6 class="fw-bold mb-3"><i class="bi bi-compass-fill text-info me-2"></i> Discover More Clubs</h6>
+                
+                <div class="d-flex flex-column gap-3">
+                    {% for club in unjoined_clubs[:3] %}
+                        <div class="d-flex align-items-center justify-content-between gap-2 p-2 rounded-3 bg-light border">
+                            <div class="overflow-hidden">
+                                <h6 class="fw-bold small mb-0 text-truncate">{{ club.name }}</h6>
+                                <span class="text-muted small" style="font-size: 0.75rem;">{{ club.category }}</span>
+                            </div>
+                            <form method="POST" action="{{ url_for('club_join', club_id=club.id) }}">
+                                <button type="submit" class="btn btn-sm btn-primary-custom py-1 px-2" style="font-size: 0.75rem;">
+                                    <i class="bi bi-plus"></i> Join
+                                </button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <p class="text-muted small mb-0">You're already a member of all active clubs!</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

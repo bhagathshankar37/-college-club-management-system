@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}My Registered Events - CampusClubs{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="{{ url_for('student_dashboard') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">My Events</li>
+                </ol>
+            </nav>
+            <h2 class="fw-bold mb-0">My Registered Events</h2>
+            <p class="text-muted mb-0">View event passes, schedules, and manage your registrations.</p>
+        </div>
+        <a href="{{ url_for('events_list') }}" class="btn btn-primary-custom">
+            <i class="bi bi-calendar-plus me-1"></i> Browse More Events
+        </a>
+    </div>
+
+    {% if registrations %}
+        <div class="row g-4">
+            {% for reg in registrations %}
+                <div class="col-lg-6">
+                    <div class="custom-card-no-hover p-4 h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <span class="badge bg-light text-primary border mb-1">{{ reg.event.club.name }}</span>
+                                    <h5 class="fw-bold mb-1">{{ reg.event.title }}</h5>
+                                </div>
+                                <span class="ticket-badge" title="Entry Ticket Pass">PASS #{{ reg.ticket_code }}</span>
+                            </div>
+
+                            <div class="row g-2 mb-3 bg-light p-3 rounded-3 small">
+                                <div class="col-sm-6">
+                                    <div class="text-muted mb-1"><i class="bi bi-calendar3 me-1 text-primary"></i> <strong>Date:</strong> {{ reg.event.event_date.strftime('%a, %b %d, %Y') }}</div>
+                                    <div class="text-muted"><i class="bi bi-clock me-1 text-primary"></i> <strong>Time:</strong> {{ reg.event.event_date.strftime('%I:%M %p') }}</div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="text-muted mb-1"><i class="bi bi-geo-alt me-1 text-primary"></i> <strong>Venue:</strong> {{ reg.event.location }} ({{ reg.event.venue_type }})</div>
+                                    <div class="text-muted"><i class="bi bi-cash-coin me-1 text-primary"></i> <strong>Fee:</strong> {{ 'Free' if reg.event.fee == 0 else '$' ~ reg.event.fee }}</div>
+                                </div>
+                            </div>
+
+                            <p class="text-muted small mb-3">{{ reg.event.description[:140] }}...</p>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                            <small class="text-muted">
+                                <i class="bi bi-check2-circle text-success me-1"></i> Confirmed RSVP on {{ reg.registered_at.strftime('%b %d, %Y') }}
+                            </small>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('event_detail', event_id=reg.event.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-info-circle me-1"></i> Details
+                                </a>
+                                <form method="POST" action="{{ url_for('event_cancel', event_id=reg.event.id) }}" onsubmit="return confirm('Cancel your seat registration for this event?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-circle me-1"></i> Cancel RSVP
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state py-5">
+            <i class="bi bi-ticket-detailed empty-state-icon"></i>
+            <h4 class="fw-bold">No Event Registrations Found</h4>
+            <p class="text-muted max-w-500 mx-auto mb-4">You haven't signed up for any events yet. Check out the college event schedule and register for workshops, hackathons, and cultural fests.</p>
+            <a href="{{ url_for('events_list') }}" class="btn btn-primary-custom btn-lg">
+                <i class="bi bi-calendar-event me-2"></i> Explore Events Calendar
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

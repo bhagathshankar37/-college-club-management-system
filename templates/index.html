@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Discover Student Life{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container position-relative" style="z-index: 2;">
+        <div class="row align-items-center gy-5">
+            <div class="col-lg-7">
+                <span class="badge bg-primary bg-opacity-25 text-white px-3 py-2 rounded-pill mb-3 border border-primary border-opacity-50">
+                    <i class="bi bi-stars me-1 text-warning"></i> Campus Student Life Portal
+                </span>
+                <h1 class="hero-title mb-3">Empowering Student Passion, Leadership & Innovation</h1>
+                <p class="hero-subtitle mb-4">Discover exciting college clubs, register for hackathons and workshops, network with fellow students, and lead impactful campus initiatives.</p>
+                
+                <div class="d-flex flex-wrap gap-3 mb-5">
+                    <a href="{{ url_for('clubs_list') }}" class="btn btn-primary-custom btn-lg">
+                        <i class="bi bi-compass me-2"></i> Explore Clubs
+                    </a>
+                    <a href="{{ url_for('events_list') }}" class="btn btn-secondary-custom btn-lg bg-dark text-white border-secondary">
+                        <i class="bi bi-calendar3 me-2"></i> Upcoming Events
+                    </a>
+                </div>
+
+                <!-- Live Metrics in Hero -->
+                <div class="row g-3">
+                    <div class="col-sm-4 col-6">
+                        <div class="hero-stat-card text-center">
+                            <h3 class="fw-bold mb-0 text-white">{{ stats.total_clubs }}</h3>
+                            <small class="text-muted">Active Clubs</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-6">
+                        <div class="hero-stat-card text-center">
+                            <h3 class="fw-bold mb-0 text-white">{{ stats.total_events }}</h3>
+                            <small class="text-muted">Total Events</small>
+                        </div>
+                    </div>
+                    <div class="col-sm-4 col-12">
+                        <div class="hero-stat-card text-center">
+                            <h3 class="fw-bold mb-0 text-white">{{ stats.total_students }}</h3>
+                            <small class="text-muted">Student Members</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="position-relative">
+                    <div class="p-4 rounded-4 shadow-2xl border border-secondary border-opacity-25" style="background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px);">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-danger text-uppercase px-2 py-1"><i class="bi bi-broadcast me-1"></i> Live Bulletin</span>
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i> Today</small>
+                        </div>
+                        <h5 class="text-white fw-bold mb-2">Campus-Wide Announcements</h5>
+                        <p class="text-muted small mb-3">Stay updated with important registrations, recruitment drives, and competition deadlines.</p>
+                        
+                        <div class="list-group list-group-flush bg-transparent">
+                            {% for ann in recent_announcements[:3] %}
+                                <div class="list-group-item bg-transparent text-white px-0 py-2 border-secondary border-opacity-25">
+                                    <div class="d-flex justify-content-between">
+                                        <strong class="small text-truncate" style="max-width: 250px;">{{ ann.title }}</strong>
+                                        <span class="badge badge-priority-{{ ann.priority }}">{{ ann.priority }}</span>
+                                    </div>
+                                    <small class="text-muted d-block">{{ ann.created_at.strftime('%b %d, %Y') }} • {{ ann.club.name if ann.club else 'General Campus' }}</small>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">No active announcements right now.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-3 text-center">
+                            <a href="{{ url_for('announcements_list') }}" class="text-primary text-decoration-none small fw-semibold">
+                                View all bulletins <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Clubs Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="category-pill mb-2"><i class="bi bi-award-fill"></i> Community Hubs</span>
+                <h2 class="fw-bold mb-0">Featured Student Clubs</h2>
+                <p class="text-muted mb-0">Join vibrant student organizations shaping the campus community.</p>
+            </div>
+            <a href="{{ url_for('clubs_list') }}" class="btn btn-outline-primary fw-semibold d-none d-sm-inline-flex align-items-center gap-1">
+                View All Clubs <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for club in featured_clubs %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="custom-card h-100 d-flex flex-direction-column">
+                        <div class="position-relative">
+                            <img src="{{ club.banner_url or 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&auto=format&fit=crop' }}" alt="{{ club.name }}" class="club-card-img">
+                            <span class="badge bg-dark bg-opacity-75 text-white position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill backdrop-blur">
+                                <i class="bi bi-people-fill me-1 text-info"></i> {{ club.active_members_count }} Members
+                            </span>
+                            <span class="category-pill position-absolute bottom-0 start-0 m-3 bg-white text-dark shadow-sm">
+                                {{ club.category }}
+                            </span>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h4 class="fw-bold mb-2">{{ club.name }}</h4>
+                            <p class="text-muted small flex-grow-1 mb-3">{{ club.short_description }}</p>
+                            
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top border-light-subtle">
+                                <small class="text-muted">
+                                    <i class="bi bi-geo-alt me-1"></i> {{ club.room_or_location }}
+                                </small>
+                                <a href="{{ url_for('club_detail', club_id=club.id) }}" class="btn btn-sm btn-primary-custom">
+                                    Explore Club <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Upcoming Spotlight Events Section -->
+<section class="py-5 bg-white border-top border-bottom border-light-subtle">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <span class="category-pill mb-2"><i class="bi bi-lightning-charge-fill"></i> Don't Miss Out</span>
+                <h2 class="fw-bold mb-0">Upcoming Events & Workshops</h2>
+                <p class="text-muted mb-0">Register early to reserve your seat in workshops, hackathons, and guest lectures.</p>
+            </div>
+            <a href="{{ url_for('events_list') }}" class="btn btn-outline-primary fw-semibold d-none d-sm-inline-flex align-items-center gap-1">
+                Full Events Calendar <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for event in upcoming_events[:3] %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="custom-card h-100 d-flex flex-column">
+                        <div class="position-relative">
+                            <img src="{{ event.image_url or 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&auto=format&fit=crop' }}" alt="{{ event.title }}" class="event-card-img">
+                            <div class="date-badge position-absolute top-0 start-0 m-3">
+                                <div class="month">{{ event.event_date.strftime('%b') }}</div>
+                                <div class="day">{{ event.event_date.strftime('%d') }}</div>
+                            </div>
+                            <span class="badge bg-dark bg-opacity-75 text-white position-absolute bottom-0 end-0 m-3 px-2 py-1">
+                                <i class="bi bi-clock me-1"></i> {{ event.event_date.strftime('%I:%M %p') }}
+                            </span>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-light text-primary border border-primary-subtle">{{ event.club.name }}</span>
+                                <span class="badge {{ 'bg-success-subtle text-success' if event.fee == 0 else 'bg-warning-subtle text-dark' }}">
+                                    {{ 'FREE' if event.fee == 0 else '$' ~ event.fee }}
+                                </span>
+                            </div>
+                            
+                            <h5 class="fw-bold mb-2">{{ event.title }}</h5>
+                            <p class="text-muted small mb-3 flex-grow-1">{{ event.description[:120] }}...</p>
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between small text-muted mb-1">
+                                    <span><i class="bi bi-geo-alt me-1"></i> {{ event.location }}</span>
+                                    <span>{{ event.registered_count }}/{{ event.max_capacity }} Registered</span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    {% set pct = (event.registered_count / event.max_capacity * 100)|round|int if event.max_capacity > 0 else 0 %}
+                                    <div class="progress-bar {{ 'bg-danger' if pct >= 90 else 'bg-primary' }}" role="progressbar" style="width: {{ pct }}%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="pt-2">
+                                <a href="{{ url_for('event_detail', event_id=event.id) }}" class="btn btn-outline-primary w-100 fw-semibold">
+                                    View Details & RSVP
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x empty-state-icon"></i>
+                        <h5>No Upcoming Events Scheduled</h5>
+                        <p class="text-muted">Check back soon for exciting club workshops and guest seminars!</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Why Join Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <span class="category-pill mb-2"><i class="bi bi-trophy-fill"></i> Student Growth</span>
+            <h2 class="fw-bold">Why Get Involved in Campus Clubs?</h2>
+            <p class="text-muted max-w-600 mx-auto">Extracurricular leadership builds career-ready skills, expands your professional network, and turns college into an unforgettable adventure.</p>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="stat-widget h-100 flex-column text-center align-items-center p-4">
+                    <div class="stat-icon-wrapper stat-icon-primary mb-2">
+                        <i class="bi bi-rocket-takeoff-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Hands-on Projects</h5>
+                    <p class="text-muted small mb-0">Collaborate with peers on real software builds, robotics kits, media productions, and business pitches.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-widget h-100 flex-column text-center align-items-center p-4">
+                    <div class="stat-icon-wrapper stat-icon-success mb-2">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Mentorship & Network</h5>
+                    <p class="text-muted small mb-0">Connect with senior coordinators, alumni mentors, and industry sponsors who guide your growth.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-widget h-100 flex-column text-center align-items-center p-4">
+                    <div class="stat-icon-wrapper stat-icon-warning mb-2">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <h5 class="fw-bold mb-2">Leadership Experience</h5>
+                    <p class="text-muted small mb-0">Organize college-wide fests, manage event budgets, and earn verified leadership certificates.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
